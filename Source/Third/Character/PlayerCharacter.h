@@ -14,14 +14,37 @@ UCLASS()
 class THIRD_API APlayerCharacter : public ABaseCharacter , public ISkillCastInterface
 {
 	GENERATED_BODY()
-	
+
+//public:
+//	//////////////////////////////////////////////////////////////////////////
+//	//>									For Interface
+//	UFUNCTION(BlueprintNativeEvent)
+//		bool BeginFocus();
+//	virtual bool BeginFocus_Implementation()									override;
+//
+//	UFUNCTION(BlueprintNativeEvent)
+//		bool EndFocus();
+//	virtual bool EndFocus_Implementation()										override;
+//
+//	UFUNCTION(BlueprintNativeEvent)
+//		float GetUseDistance();
+//	virtual float GetUseDistance_Implementation()								override;
+//
+//	UFUNCTION(BlueprintNativeEvent)
+//		bool GetIsUsable();
+//	virtual bool GetIsUsable_Implementation()									override;
+//
+//	UFUNCTION(BlueprintNativeEvent)
+//		bool OnUsed(class APlayerController* _Controller);
+//	virtual bool OnUsed_Implementation(APlayerController* _Controller)			override;
+
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void BeginSpellCast();
+		void BeginSpellCast();
 	virtual void BeginSpellCast_Implementation()		override;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void EndSpellCast();
+		void EndSpellCast();
 	virtual void EndSpellCast_Implementation()			override;
 	
 	

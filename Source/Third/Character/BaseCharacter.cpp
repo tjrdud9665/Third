@@ -3,7 +3,25 @@
 #include "BaseCharacter.h"
 #include "Character/PointComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
+
+void ABaseCharacter::DefaultAttack()
+{
+
+}
+
+void ABaseCharacter::SetMoveable(bool _NewMovable)
+{
+	bMovable = _NewMovable;
+}
+
+
+
+void ABaseCharacter::SetPlayerController(class AController* _Controller)
+{
+	CustomPlayerController = _Controller;
+}
 
 bool ABaseCharacter::BeginFocus_Implementation()
 {
@@ -28,6 +46,25 @@ bool ABaseCharacter::GetIsUsable_Implementation()
 bool ABaseCharacter::OnUsed_Implementation(class APlayerController* Controller)
 {
 	return true;
+}
+bool ABaseCharacter::GetIsHostil_Implementation()
+{
+	return bHostile;
+}
+
+bool ABaseCharacter::GetIsAlive_Implementation()
+{
+	return bAlive;
+}
+
+float ABaseCharacter::GetAttackRange_Implementation()
+{
+	return MelleAttackDistance;
+}
+
+float ABaseCharacter::GetAttackDamage_Implementation()
+{
+	return DefaultDamage;
 }
 
 float ABaseCharacter::GetTargetDistance(AActor* Target)
@@ -56,8 +93,14 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	bAlive = true;
 	bAttacking = false;
+
 	UseDistance = 128.0f;
+
 	bUsable = true;
+
+	bMovable = true;
+
+	MelleAttackDistance = 128.0f;
 
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 	

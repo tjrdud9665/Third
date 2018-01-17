@@ -42,7 +42,7 @@ private:
 	UPROPERTY(Replicated)
 	class ATopDownPawn* TopDownPawn;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	class ACustomAIController* AiController;
 
 	UPROPERTY(EditAnywhere, Category = "Character", meta = (AllowPrivateAccess = "true"))

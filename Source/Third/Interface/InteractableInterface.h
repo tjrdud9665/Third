@@ -53,6 +53,5 @@ public:
 	 bool OnUsed(class APlayerController* Controller)	;
 
 
-
 	
 };

@@ -11,6 +11,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Interface/InteractableInterface.h"
+#include "Interface/CombatInterface.h"
 
 #include "UI/InGameHUD.h"
 #include "UI/UIFactory.h"
@@ -498,6 +499,8 @@ void ACustomPlayerController::RespawnPlayer()
 
 		PlayerCharacter = GetWorld()->SpawnActor<ABaseCharacter>(CharacterClass, TopDownPawn->GetActorTransform(), SpawnInfo);		
 
+		PlayerCharacter->SetPlayerController(this);
+
 		AiController = GetWorld()->SpawnActor<ACustomAIController>(ACustomAIController::StaticClass(), TopDownPawn->GetActorTransform());
 
 		AiController->Possess(PlayerCharacter);
@@ -559,6 +562,15 @@ void ACustomPlayerController::InteractWithActor(AActor* InteractActor)
 
 
 		//TODO: Some Interaction Actor with Interact..
+		auto TargetCharacter = Cast<ABaseCharacter>(CurrentTarget);
+
+		if (TargetCharacter)
+		{
+			if (ICombatInterface::Execute_GetIsHostil(TargetCharacter) && ICombatInterface::Execute_GetIsAlive(TargetCharacter))
+			{
+
+			}
+		}
 
 
 
@@ -617,6 +629,8 @@ void ACustomPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(ACustomPlayerController, TopDownPawn);
 	DOREPLIFETIME(ACustomPlayerController, PlayerCharacter);
 	DOREPLIFETIME(ACustomPlayerController, LastFocusTarget);
+	DOREPLIFETIME(ACustomPlayerController, AiController);
+	
 
 
 }

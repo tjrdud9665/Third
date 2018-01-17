@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/InteractableInterface.h"
+#include "Interface/CombatInterface.h"
 #include "BaseCharacter.generated.h"
 
 
 
 
 UCLASS()
-class THIRD_API ABaseCharacter : public ACharacter , public IInteractableInterface
+class THIRD_API ABaseCharacter : public ACharacter , public IInteractableInterface , public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -20,6 +21,12 @@ private:
 //>									For Componetns
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UPointComponent* PointComp;
+
+//////////////////////////////////////////////////////////////////////////
+//> Custom Controller
+	UPROPERTY()
+	class AController* CustomPlayerController;
+
 
 
 	/////////////////   For Interaction			/////////////////////////////
@@ -41,6 +48,35 @@ private:
 	UPROPERTY()
 	uint32 bAlive : 1;
 
+	UPROPERTY()
+	uint32 bMovable : 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DefaultMelleAttack", meta = (AllowPrivateAccess = "true"))
+	float MelleAttackDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DefaultMelleAttack", meta = (AllowPrivateAccess = "true"))
+	float DefaultDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Anim", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HitAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Anim", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* DefaultAttackAnim;
+
+
+
+public:
+	UFUNCTION()
+	void DefaultAttack();
+
+	UFUNCTION()
+	void SetMoveable(bool _NewMovable);
+
+public:
+	UFUNCTION()
+	void SetPlayerController(class AController* _Controller);
+
+	
 
 
 public:
@@ -66,8 +102,23 @@ public:
 	bool OnUsed(class APlayerController* _Controller);
 	virtual bool OnUsed_Implementation(APlayerController* _Controller)			override;
 
-	
+	UFUNCTION(BlueprintNativeEvent)
+	bool GetIsHostil();
+	virtual bool GetIsHostil_Implementation()										override;
 
+	
+	UFUNCTION(BlueprintNativeEvent)
+	bool GetIsAlive();
+	virtual bool GetIsAlive_Implementation()									override;
+
+
+	UFUNCTION(BlueprintNativeEvent)
+	float GetAttackRange();
+	virtual float GetAttackRange_Implementation()									override;
+
+	UFUNCTION(BlueprintNativeEvent)
+		float GetAttackDamage();
+	virtual float GetAttackDamage_Implementation()									override;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -97,5 +148,18 @@ public:
 	{
 		return PointComp;
 	}
-	
+
+	FORCEINLINE uint32 IsMovable()
+	{
+		return bMovable;
+	}
+
+	FORCEINLINE float GetDefaultMelleDistance()
+	{
+		return MelleAttackDistance;
+	}
+	FORCEINLINE class AController* GetCustomController()
+	{
+		return CustomPlayerController;
+	}
 };

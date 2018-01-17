@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SkillCastInterface.generated.h"
+#include "CombatInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class USkillCastInterface : public UInterface
+class UCombatInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -15,17 +15,27 @@ class USkillCastInterface : public UInterface
 /**
  * 
  */
-class THIRD_API ISkillCastInterface
+class THIRD_API ICombatInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void BeginSpellCast();
+		bool GetIsAlive();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		bool GetIsHostil();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		float GetAttackRange();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		float GetAttackDamage();
+
+
+
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void EndSpellCast();
-
-
+	
 };
