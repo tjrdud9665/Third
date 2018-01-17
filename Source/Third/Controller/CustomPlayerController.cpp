@@ -1,15 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CustomPlayerController.h"
-#include "Kismet/GameplayStatics.h"
 #include "Gameframework/PlayerStart.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+
+#include "Character/PointComponent.h"
 #include "Character/BaseCharacter.h"
+
 #include "Controller/TopDownPawn.h"
 #include "Controller/CustomAIController.h"
+
 #include "Net/UnrealNetwork.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Camera/CameraComponent.h"
+
 #include "Interface/InteractableInterface.h"
 #include "Interface/CombatInterface.h"
 
@@ -17,10 +23,10 @@
 #include "UI/UIFactory.h"
 #include "UI/PlayerFrame.h"
 
-#include "Kismet/GameplayStatics.h"
+
 #include "PlayGameModeBase.h"
 
-#include "Character/PointComponent.h"
+
 #include "SType.h"
 
 #define SPHERE_TRACE_RAD 16
@@ -52,7 +58,7 @@ void ACustomPlayerController::Server_InitPlayer_Implementation()
 		UE_LOG(LogTemp, Error, TEXT("RespawnFailed : TopDownPawn Casting Error"));
 		return;
 	}
-		
+
 
 	RespawnPlayer();
 
@@ -78,11 +84,11 @@ void ACustomPlayerController::OnMousePressed()
 		else
 		{
 			//ClickProcess
-			Server_UpdateMouseClick(MouseLocation);			
-			
+			Server_UpdateMouseClick(MouseLocation);
+
 		}
 
-	}	
+	}
 }
 
 void ACustomPlayerController::Server_Update_Implementation()
@@ -150,7 +156,7 @@ void ACustomPlayerController::GetUsableActor(const FVector Location, AActor*& Ou
 {
 	//>								Sphere Trace From Camera Location to (Mouse)Location
 	if (!TopDownPawn)
-	{		
+	{
 		return;
 	}
 
@@ -186,8 +192,8 @@ void ACustomPlayerController::GetUsableActor(const FVector Location, AActor*& Ou
 	TSubclassOf<UInteractableInterface> Interface;
 	if (Hits.IsValidIndex(LastIdx))
 	{
-		if(Cast<IInteractableInterface>(Hits[LastIdx].GetActor()))
-		{			
+		if (Cast<IInteractableInterface>(Hits[LastIdx].GetActor()))
+		{
 			OutActor = Hits[LastIdx].GetActor();
 		}
 	}
@@ -289,17 +295,17 @@ void ACustomPlayerController::CreatePlayerFrame()
 	}
 
 	HudWidget->CreatePlayerFrame(this, PlayerCharacter->GetPointComp()->GetPointType());
-	
-	GetWorldTimerManager().ClearTimer(UIInitialTimer);	
-	
+
+	GetWorldTimerManager().ClearTimer(UIInitialTimer);
+
 }
 
 void ACustomPlayerController::Client_UpdatePlayerFrame_Implementation(EPointType PointType, FPointInfo PointInfo)
 {
-	
+
 	auto Frame = HudWidget->GetPlayerFrame();
-	
-	if(Frame)
+
+	if (Frame)
 		Frame->SetGauagePercent(PointType, PointInfo);
 
 
@@ -327,7 +333,7 @@ void ACustomPlayerController::Server_UpdatePlayerFrame_Implementation()
 	{
 		auto Point = PointComp->GetPoint(PointType);
 
-		if(Point)
+		if (Point)
 			Client_UpdatePlayerFrame(PointType, *Point);
 	}
 }
@@ -351,9 +357,9 @@ void ACustomPlayerController::Server_UpdatePartyPlayerFrame_Implementation()
 			if (PartyChar)
 			{
 				auto PartyCharPointComp = PartyChar->GetPointComp();
-				if(PartyCharPointComp)
+				if (PartyCharPointComp)
 					PartyCharPointComps.Add(PartyCharPointComp);
-			}			
+			}
 
 		}
 	}
@@ -365,19 +371,22 @@ void ACustomPlayerController::Server_UpdatePartyPlayerFrame_Implementation()
 			auto PointTypes = PartyCharPointComps[i]->GetPointType();
 
 			for (auto PointType : PointTypes)
-			{			
+			{
 				auto Point = PartyCharPointComps[i]->GetPoint(PointType);
 
 				if (Point)
 				{
-					Client_UpdatePartyPlayerFrame(PointType, *Point);
+
 					auto CustomController = Cast<ACustomPlayerController>(PartyController[i]);
 					if (CustomController)
 					{
-						Client_UpdatePartyPlayerFrame(PointType, *Point);
-						CustomController->Client_UpdatePartyPlayerFrame(PointType, *Point);
+						if (CustomController != this)
+						{
+							Client_UpdatePartyPlayerFrame(PointType, *Point);
+						}
+
 					}
-					
+
 				}
 			}
 		}
@@ -449,6 +458,7 @@ void ACustomPlayerController::AddPartyFrames(APlayerController* _OwnPlayer, clas
 
 void ACustomPlayerController::Client_UpdatePartyPlayerFrame_Implementation(EPointType PointType, FPointInfo PointInfo)
 {
+
 	auto PartyFrames = HudWidget->GetPartyPlayerFrames();
 
 	for (auto PartyFrame : PartyFrames)
@@ -466,8 +476,7 @@ void ACustomPlayerController::Party()
 {
 	Server_AddPartyPlayer();
 
-	GetWorld()->GetTimerManager().SetTimer(PartyFrameUpdateTimer, this ,&ACustomPlayerController::Server_UpdatePartyPlayerFrame, FRAME_UPDATE_INTERVAL, true);
-	
+	GetWorld()->GetTimerManager().SetTimer(PartyFrameUpdateTimer, this, &ACustomPlayerController::Server_UpdatePartyPlayerFrame, FRAME_UPDATE_INTERVAL, true);
 
 }
 
@@ -497,7 +506,7 @@ void ACustomPlayerController::RespawnPlayer()
 		//>>For Playing Spawn Character and AI Con ,TopDownCameraPawn(ForNetworking)..
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		PlayerCharacter = GetWorld()->SpawnActor<ABaseCharacter>(CharacterClass, TopDownPawn->GetActorTransform(), SpawnInfo);		
+		PlayerCharacter = GetWorld()->SpawnActor<ABaseCharacter>(CharacterClass, TopDownPawn->GetActorTransform(), SpawnInfo);
 
 		PlayerCharacter->SetPlayerController(this);
 
@@ -505,8 +514,8 @@ void ACustomPlayerController::RespawnPlayer()
 
 		AiController->Possess(PlayerCharacter);
 
-		this->Possess(TopDownPawn);				
-		
+		this->Possess(TopDownPawn);
+
 
 	}
 
@@ -552,6 +561,28 @@ void ACustomPlayerController::MoveToLocation(FVector Location)
 	}
 }
 
+bool ACustomPlayerController::MoveToTargetActor(AActor* TargetActor)
+{
+	if (HasAuthority())
+	{
+		if (ICombatInterface::Execute_GetIsAlive(TargetActor))
+		{
+			auto MoveResult = AiController->MoveToActor(TargetActor);
+
+			if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
+				return true;
+		}
+		else
+		{
+			AiController->MoveToLocation(TargetActor->GetActorLocation());
+		}
+
+	}
+
+	return false;
+
+}
+
 void ACustomPlayerController::InteractWithActor(AActor* InteractActor)
 {
 	if (HasAuthority())
@@ -562,19 +593,36 @@ void ACustomPlayerController::InteractWithActor(AActor* InteractActor)
 
 
 		//TODO: Some Interaction Actor with Interact..
-		auto TargetCharacter = Cast<ABaseCharacter>(CurrentTarget);
+		ABaseCharacter* TargetCharacter = Cast<ABaseCharacter>(CurrentTarget);
 
 		if (TargetCharacter)
 		{
 			if (ICombatInterface::Execute_GetIsHostil(TargetCharacter) && ICombatInterface::Execute_GetIsAlive(TargetCharacter))
 			{
-
+				UE_LOG(LogTemp, Warning, TEXT("Alive Hostil Check"));
+				if (TargetDistance <= ICombatInterface::Execute_GetAttackRange(CurrentTarget))
+				{
+					Server_AttackTarget(CurrentTarget);
+				}
+				else
+				{
+					MoveToTargetActor(CurrentTarget);
+				}
 			}
 		}
 
-
-
 	}
+
+}
+
+void ACustomPlayerController::Server_InteractWithActor_Implementation(AActor* InteractActor)
+{
+	InteractWithActor(InteractActor);
+}
+
+bool ACustomPlayerController::Server_InteractWithActor_Validate(AActor* InteractActor)
+{
+	return true;
 }
 
 bool ACustomPlayerController::UseTargetActor(AActor* TargetACtor)
@@ -587,6 +635,40 @@ bool ACustomPlayerController::UseTargetActor(AActor* TargetACtor)
 	}
 	else
 		return false;
+}
+
+void ACustomPlayerController::Server_AttackTarget_Implementation(AActor* TargetActor)
+{
+	AiController->StopMovement();
+
+	PlayerCharacter->FaceToActor(TargetActor);
+
+	//Attack Default..
+	Server_DefaultAttack();
+
+}
+
+bool ACustomPlayerController::Server_AttackTarget_Validate(AActor* TargetActor)
+{
+	return true;
+}
+
+void ACustomPlayerController::Server_DefaultAttack_Implementation()
+{
+	UKismetSystemLibrary::PrintString(this, TEXT("ATTack!!"));
+
+	if (HasAuthority())
+	{
+		PlayerCharacter->DefaultAttack();
+	}
+
+
+
+}
+
+bool ACustomPlayerController::Server_DefaultAttack_Validate()
+{
+	return true;
 }
 
 void ACustomPlayerController::ShowMouseClick()
@@ -630,7 +712,7 @@ void ACustomPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(ACustomPlayerController, PlayerCharacter);
 	DOREPLIFETIME(ACustomPlayerController, LastFocusTarget);
 	DOREPLIFETIME(ACustomPlayerController, AiController);
-	
+
 
 
 }
@@ -643,16 +725,16 @@ void ACustomPlayerController::BeginPlay()
 	{
 		Server_InitPlayer();
 
-		FInputModeGameAndUI InputMode;		
+		FInputModeGameAndUI InputMode;
 		InputMode.SetHideCursorDuringCapture(false);
-		
+
 		SetInputMode(InputMode);
-		bShowMouseCursor = true	;			
-		
-		GetWorld()->GetTimerManager().SetTimer(UIInitialTimer,this, &ACustomPlayerController::Client_CreatePlayerFrame, 0.5f, true);	
-		GetWorld()->GetTimerManager().SetTimer(FrameUpdateTimer, this, &ACustomPlayerController::Server_UpdatePlayerFrame , FRAME_UPDATE_INTERVAL, true);		
+		bShowMouseCursor = true;
+
+		GetWorld()->GetTimerManager().SetTimer(UIInitialTimer, this, &ACustomPlayerController::Client_CreatePlayerFrame, 0.5f, true);
+		GetWorld()->GetTimerManager().SetTimer(FrameUpdateTimer, this, &ACustomPlayerController::Server_UpdatePlayerFrame, FRAME_UPDATE_INTERVAL, true);
 	}
-	
+
 
 
 }

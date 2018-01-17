@@ -23,7 +23,6 @@ private:
 	UPROPERTY(EditDefaultsOnly , BlueprintReadWrite , meta = (AllowPrivateAccess = "true"))
 	struct FStatInfo StatInfo;
 
-public:
 
 
 
@@ -41,6 +40,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
+
+public:
+	UFUNCTION()
+		void SetPoint(EPointType PointType, float _newPoint);
 
 	FORCEINLINE TArray<EPointType> GetPointType()
 	{

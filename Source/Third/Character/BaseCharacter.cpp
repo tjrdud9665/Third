@@ -3,11 +3,38 @@
 #include "BaseCharacter.h"
 #include "Character/PointComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Classes/Animation/AnimMontage.h"
+#include "Classes/Animation/AnimInstance.h"
 
 
 void ABaseCharacter::DefaultAttack()
 {
+	if (HasAuthority())
+	{
+		MultiCast_PlayAnim(DefaultAttackAnim);
+	}
+}
+
+void ABaseCharacter::MultiCast_PlayAnim_Implementation(class UAnimMontage* Anim)
+{
+	auto Mesh = GetMesh();
+	
+	auto AnimInst = Mesh->GetAnimInstance();
+
+	if (AnimInst)
+	{
+		if (!AnimInst->Montage_IsPlaying(Anim))
+		{
+			PlayAnimMontage(Anim);
+		}
+
+	}
+
+
+
 
 }
 
@@ -17,6 +44,30 @@ void ABaseCharacter::SetMoveable(bool _NewMovable)
 }
 
 
+
+void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	
+
+}
+
+float ABaseCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	float CurrentHealth =PointComp->GetPoint(EPointType::EPT_HEALTH)->CurrentValue;
+	//float NewHealth = CurrentHealth - Damage;
+	if (ActualDamage > 0.0f)
+	{
+		PointComp->SetPoint(EPointType::EPT_HEALTH, CurrentHealth - Damage);
+	}
+		
+
+	return ActualDamage;
+}
 
 void ABaseCharacter::SetPlayerController(class AController* _Controller)
 {
@@ -76,6 +127,19 @@ float ABaseCharacter::GetTargetDistance(AActor* Target)
 
 }
 
+void ABaseCharacter::FaceToActor(AActor* Target)
+{
+	auto LookRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
+
+	FRotator newRot = FRotator(0.0f, LookRot.Yaw,0.0f);
+
+	SetActorRotation(newRot);	
+
+	
+}
+
+
+
 // Sets default values
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -100,6 +164,7 @@ void ABaseCharacter::BeginPlay()
 
 	bMovable = true;
 
+	
 	MelleAttackDistance = 128.0f;
 
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;

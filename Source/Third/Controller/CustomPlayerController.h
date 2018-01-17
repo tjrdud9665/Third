@@ -177,15 +177,15 @@ public:
 	bool Server_AddPartyPlayer_Validate();
 
 	UFUNCTION(Client, Reliable)
-	void Client_AddPartyFrames(APlayerController* _OwnPlayer, class ABaseCharacter* _PartyCharacter);
+	void Client_AddPartyFrames(APlayerController* _OwnPlayer, class ABaseCharacter* _PartyCharacter );
 	void Client_AddPartyFrames_Implementation(APlayerController* _OwnPlayer, class ABaseCharacter* _PartyCharacter);
 
 	UFUNCTION()
 	void AddPartyFrames(APlayerController* _OwnPlayer, class ABaseCharacter* _PartyCharacter);
 
 	UFUNCTION(Client, Reliable)
-	void Client_UpdatePartyPlayerFrame(EPointType PointType, FPointInfo PointInfo);
-	void Client_UpdatePartyPlayerFrame_Implementation(EPointType PointType, FPointInfo PointInfo);
+	void Client_UpdatePartyPlayerFrame(EPointType PointType, FPointInfo PointInfo  );
+	void Client_UpdatePartyPlayerFrame_Implementation(EPointType PointType, FPointInfo PointInfo );
 
 	UFUNCTION(Exec)
 	void Party();
@@ -227,12 +227,41 @@ public:
 	//>								For Movement
 	UFUNCTION()
 	void MoveToLocation(FVector Location);
+
+	UFUNCTION()
+	bool MoveToTargetActor(AActor* TargetActor);
+
+
 	//////////////////////////////////////////////////////////////////////////
 	//>								For Interact(Action)(미구현)
 	UFUNCTION()
 	void InteractWithActor(AActor* InteractActor);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_InteractWithActor(AActor* InteractActor);
+	void Server_InteractWithActor_Implementation(AActor* InteractActor);
+	bool Server_InteractWithActor_Validate(AActor* InteractActor);
+
+
+
 	UFUNCTION()
 	bool UseTargetActor(AActor* TargetACtor);
+
+	//////////////////////////////////////////////////////////////////////////
+	//>								For Combat..
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_AttackTarget(AActor* TargetActor);
+	void Server_AttackTarget_Implementation(AActor* TargetActor);
+	bool Server_AttackTarget_Validate(AActor* TargetActor);
+
+
+	UFUNCTION(Server, Reliable ,WithValidation)
+	void Server_DefaultAttack();
+	void Server_DefaultAttack_Implementation();
+	bool Server_DefaultAttack_Validate();
+
+
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//>								For Decoration (미구현)

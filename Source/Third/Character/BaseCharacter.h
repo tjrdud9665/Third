@@ -16,10 +16,10 @@ class THIRD_API ABaseCharacter : public ACharacter , public IInteractableInterfa
 {
 	GENERATED_BODY()
 
-private:
+protected:
 //////////////////////////////////////////////////////////////////////////
 //>									For Componetns
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UPointComponent* PointComp;
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,9 +28,8 @@ private:
 	class AController* CustomPlayerController;
 
 
-
 	/////////////////   For Interaction			/////////////////////////////
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
 	uint32 bHostile : 1;
 
 	UPROPERTY()
@@ -69,8 +68,19 @@ public:
 	UFUNCTION()
 	void DefaultAttack();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCast_PlayAnim(class UAnimMontage* Anim);
+	void MultiCast_PlayAnim_Implementation(class UAnimMontage* Anim);
+
+
 	UFUNCTION()
 	void SetMoveable(bool _NewMovable);
+
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	UFUNCTION()
@@ -126,6 +136,11 @@ public:
 	UFUNCTION(Category = "Interaction")
 	float GetTargetDistance(AActor* Target);
 
+	UFUNCTION()
+	void FaceToActor(AActor* Target);
+	
+
+
 
 public:
 	// Sets default values for this character's properties
@@ -152,11 +167,6 @@ public:
 	FORCEINLINE uint32 IsMovable()
 	{
 		return bMovable;
-	}
-
-	FORCEINLINE float GetDefaultMelleDistance()
-	{
-		return MelleAttackDistance;
 	}
 	FORCEINLINE class AController* GetCustomController()
 	{
