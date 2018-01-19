@@ -351,48 +351,34 @@ void ACustomPlayerController::Server_UpdatePartyPlayerFrame_Implementation()
 	{
 		auto CastedController = Cast<ACustomPlayerController>(PartPlayer);
 
-		if (CastedController)
+		auto PartyChar = CastedController->PlayerCharacter;	
+
+		auto PartyCharPointComp = PartyChar->GetPointComp();
+
+		auto PointTypes = PartyCharPointComp->GetPointType();
+
+		for (auto PointType : PointTypes)
 		{
-			auto PartyChar = CastedController->PlayerCharacter;
-			if (PartyChar)
-			{
-				auto PartyCharPointComp = PartyChar->GetPointComp();
-				if (PartyCharPointComp)
-					PartyCharPointComps.Add(PartyCharPointComp);
-			}
+			auto Point = PartyCharPointComp->GetPoint(PointType);
 
-		}
-	}
-
-	for (int32 i = 0; i < PartyController.Num(); i++)
-	{
-		if (PartyCharPointComps.IsValidIndex(i))
-		{
-			auto PointTypes = PartyCharPointComps[i]->GetPointType();
-
-			for (auto PointType : PointTypes)
-			{
-				auto Point = PartyCharPointComps[i]->GetPoint(PointType);
-
-				if (Point)
+			if (Point)
+			{				
+				if (CastedController)
 				{
-
-					auto CustomController = Cast<ACustomPlayerController>(PartyController[i]);
-					if (CustomController)
+					if (CastedController != this)
 					{
-						if (CustomController != this)
-						{
-							Client_UpdatePartyPlayerFrame(PointType, *Point);
-						}
-
+						Client_UpdatePartyPlayerFrame(PointType, *Point);					
 					}
-
 				}
+
 			}
 		}
-	}
 
+
+	}
 }
+
+
 
 bool ACustomPlayerController::Server_UpdatePartyPlayerFrame_Validate()
 {
@@ -422,16 +408,12 @@ void ACustomPlayerController::Server_AddPartyPlayer_Implementation()
 		{
 			if (PartyController.Find(PartyCon) == INDEX_NONE)
 			{
-				PartyCon->Client_AddPartyFrames(PartyMember, PartyCon->PlayerCharacter);
 				Client_AddPartyFrames(PartyMember, PartyCon->PlayerCharacter);
 				PartyController.Add(PartyCon);
-
 			}
-
 		}
 
 	}
-
 
 }
 
@@ -469,14 +451,52 @@ void ACustomPlayerController::Client_UpdatePartyPlayerFrame_Implementation(EPoin
 		}
 	}
 
+}
 
+void ACustomPlayerController::Server_Party_Implementation()
+{
+	//Server_AddPartyPlayer();
+
+	auto GameMode = UGameplayStatics::GetGameMode(this);
+
+	APlayGameModeBase* PlayGameMode = Cast<APlayGameModeBase>(GameMode);
+
+	if (!PlayGameMode)
+	{
+		return;
+	}
+
+	auto PartyPlayerController = PlayGameMode->GetPartyPlayer();
+
+	for (auto PartyMember : PartyPlayerController)
+	{
+		auto PartyCon = Cast<ACustomPlayerController>(PartyMember);
+
+		if (PartyCon != this)
+		{
+			if (PartyController.Find(PartyCon) == INDEX_NONE)
+			{
+				PartyCon->Server_AddPartyPlayer();
+				PartyCon->Server_Party();
+				
+			}
+		}
+	}
+
+	Server_AddPartyPlayer();
+
+	GetWorld()->GetTimerManager().SetTimer(PartyFrameUpdateTimer, this, &ACustomPlayerController::Server_UpdatePartyPlayerFrame, FRAME_UPDATE_INTERVAL, true);
+}
+
+bool ACustomPlayerController::Server_Party_Validate()
+{
+	return true;
 }
 
 void ACustomPlayerController::Party()
 {
-	Server_AddPartyPlayer();
 
-	GetWorld()->GetTimerManager().SetTimer(PartyFrameUpdateTimer, this, &ACustomPlayerController::Server_UpdatePartyPlayerFrame, FRAME_UPDATE_INTERVAL, true);
+	Server_Party();
 
 }
 

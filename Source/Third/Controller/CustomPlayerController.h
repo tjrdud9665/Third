@@ -186,6 +186,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_UpdatePartyPlayerFrame(EPointType PointType, FPointInfo PointInfo  );
 	void Client_UpdatePartyPlayerFrame_Implementation(EPointType PointType, FPointInfo PointInfo );
+		
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_Party();
+	void Server_Party_Implementation();
+	bool Server_Party_Validate();
 
 	UFUNCTION(Exec)
 	void Party();
@@ -202,11 +208,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_UpdatePartyPlayerFrame();
 	void Server_UpdatePartyPlayerFrame_Implementation();
-	bool Server_UpdatePartyPlayerFrame_Validate();
-
-
-
-	
+	bool Server_UpdatePartyPlayerFrame_Validate();	
 
 
 

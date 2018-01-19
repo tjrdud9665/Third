@@ -19,6 +19,10 @@ private:
 	TArray<class APlayerController*> PartyPlayers;
 
 
+public:
+
+
+
 
 
 public:
